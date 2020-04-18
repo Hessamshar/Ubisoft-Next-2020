@@ -21,7 +21,7 @@ void TriangleBase::Update(float dt)
 	m_mid_y = m_y2 + (m_y3 - m_y2) / 2;
 }
 
-void TriangleBase::Draw()
+void TriangleBase::Draw() const
 {
 	App::DrawLine(m_x1, m_y1, m_x2, m_y2, m_red, m_green, m_blue);
 	App::DrawLine(m_x1, m_y1, m_x3, m_y3, m_red, m_green, m_blue);

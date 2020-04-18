@@ -1,12 +1,12 @@
-#ifndef _TRIANGLEBASE_H_
-#define _TRIANGLEBASE_H_
+#ifndef _TRIANGLE_BASE_H_
+#define _TRIANGLE_BASE_H_
 
 class TriangleBase
 {
 public:
 	TriangleBase(float x1, float y1, float x2, float y2, float x3, float y3);
 	void Update(float dt);
-	void Draw();
+	void Draw() const;
 	void SetColor(float r, float g, float b, float a = 1.0f) { m_red = r; m_green = g; m_blue = b; m_alpha = a; }
 	void SetPointOnePosition(float x, float y) { m_x1 = x; m_y1 = y; }
 	void SetPointTwoPosition(float x, float y) { m_x2 = x; m_y2 = y; }
