@@ -7,6 +7,7 @@
 #include <math.h>  
 //------------------------------------------------------------------------
 #include "app\app.h"
+#include "GameMaster.h"
 //------------------------------------------------------------------------
 
 //------------------------------------------------------------------------
@@ -14,6 +15,7 @@
 //------------------------------------------------------------------------
 CSimpleSprite *testSprite;
 CSimpleSprite *testSprite2;
+GameMaster *gameMaster;
 enum
 {
 	ANIM_FORWARDS,
@@ -31,7 +33,8 @@ void Init()
 	//------------------------------------------------------------------------
 	// Example Sprite Code....
 	
-
+	gameMaster = GameMaster::getInstance();
+	gameMaster->CreateMap(29);
 	testSprite = App::CreateSprite(".\\TestData\\Test.bmp", 8, 4);
 	testSprite->SetPosition(400.0f, 400.0f);
 	float speed = 1.0f / 15.0f;
@@ -160,6 +163,7 @@ void Render()
 	// Example Text.
 	//------------------------------------------------------------------------
 	App::Print(100, 100, "Sample Text");
+	gameMaster->Draw();
 
 }
 //------------------------------------------------------------------------
