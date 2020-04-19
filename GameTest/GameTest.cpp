@@ -15,7 +15,7 @@
 GameMaster *gameMaster;
 float button_hold_time = MAX_HOLD_TIME + 1;
 float player_speed = 0.0f;
-int player_moving = 0;
+float enemy_respawner = 0.0f;
 
 enum
 {
@@ -33,7 +33,7 @@ void Init()
 {
 	gameMaster = GameMaster::getInstance();
 	gameMaster->CreateMap(30);
-	gameMaster->SetPlayerSprite(App::CreateSprite(".\\TestData\\Ships.bmp", 2, 12), 2);
+	gameMaster->SetPlayerSprite(App::CreateSprite(".\\TestData\\ships2.bmp", 1, 3), 0);
 }
 
 //------------------------------------------------------------------------
@@ -42,6 +42,7 @@ void Init()
 //------------------------------------------------------------------------
 void Update(float deltaTime)
 {
+	enemy_respawner += deltaTime;
 	gameMaster->Update(deltaTime);
 	if (App::GetController().GetLeftThumbStickX() > 0.5f)
 	{
@@ -130,7 +131,12 @@ void Update(float deltaTime)
 	}
 	if (App::GetController().CheckButton('a', true))
 	{
-		gameMaster->AddBullet(App::CreateSprite(".\\TestData\\Ships.bmp", 2, 12), 12);
+		gameMaster->AddBullet(App::CreateSprite(".\\TestData\\bullet.bmp", 1, 1), 0);
+	}
+	if (enemy_respawner / 3000 >= 1)
+	{
+		enemy_respawner = 0.0f;
+		gameMaster->AddEnemy(App::CreateSprite(".\\TestData\\ships.bmp", 2, 12), 0);
 	}
 }
 
