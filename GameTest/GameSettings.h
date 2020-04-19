@@ -36,6 +36,7 @@
 #define MAX_NUKES_LV3				(5)
 #define PLAYER_HIT_TIME				(3000.0f)
 #define BONUS_TIME					(10000.0f)
+#define GAME_OVER_TEXT_TIME			(4000.0f)
 #define APP_VIRTUAL_CENTER_X		(APP_VIRTUAL_WIDTH / 2)
 #define APP_VIRTUAL_CENTER_Y		(APP_VIRTUAL_HEIGHT / 2)
 #define DEBUG						(true)

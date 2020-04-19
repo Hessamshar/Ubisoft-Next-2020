@@ -43,13 +43,9 @@ GameMaster::~GameMaster()
     }
     m_player = nullptr;
     m_triangles.clear();
-    m_triangles.shrink_to_fit();
     m_bullets.clear();
-    m_bullets.shrink_to_fit();
     m_enemies.clear();
-    m_enemies.shrink_to_fit();
     m_bonuses.clear();
-    m_bonuses.shrink_to_fit();
 }
 
 GameMaster* GameMaster::GetInstance()
@@ -214,7 +210,7 @@ void GameMaster::NukeEnemies()
 
 void GameMaster::PlayerHit(int enemy_index)
 {
-    if (m_player_hit_timer >= PLAYER_HIT_TIME)
+    if (m_player_hit_timer >= PLAYER_HIT_TIME && !m_player->IsDestroyed())
     {
         m_enemies[enemy_index]->Destroy();
         m_player_hit_timer = 0.0f;
@@ -252,6 +248,15 @@ void GameMaster::CollisionDetection()
         {
             BonusHit(i);
             continue;
+        }
+        for (int j = 0; j < m_bonuses.size(); j++)
+        {
+            if (AreColliding(m_bonuses[i], m_bullets[j]))
+            {
+                m_bonuses[i]->Destroy();
+                m_bullets[j]->Destroy();
+                break;
+            }
         }
     }
 }
@@ -331,8 +336,6 @@ void GameMaster::Update(float dt)
         }
         CollisionDetection();
         m_player->SetPosition(m_triangles[m_current]->GetMidX(), m_triangles[m_current]->GetMidY());
-        float angle = atan2(APP_VIRTUAL_CENTER_Y - (double)m_triangles[m_current]->GetMidY(),
-            (double)m_triangles[m_current]->GetMidX() - APP_VIRTUAL_CENTER_X);
         m_player->Update(dt);
         for (int i = 0; i < m_bullets.size(); i++)
         {
@@ -385,7 +388,7 @@ void GameMaster::Draw()
     }
     if (m_current != -1)
     {
-        m_triangles[m_current]->SetColor(1.00, 0.87, 0.05);
+        m_triangles[m_current]->SetColor(1.00f, 0.87f, 0.05f);
         m_triangles[m_current]->Draw();
     }
     if (m_triangle_size > 0 && m_player)

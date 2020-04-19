@@ -20,7 +20,7 @@ void Player::Update(float dt)
 {
 	if (m_sprite)
 	{
-		m_angle = PI - atan2(m_target_y - (double)m_y, (double)m_x - m_target_x);
+		m_angle = PI - atan2f(m_target_y - m_y, m_x - m_target_x);
 		m_sprite->SetAngle(3 * PI / 2 + m_angle);
 		m_sprite->SetPosition(m_x, m_y);
 		m_sprite->Update(dt);

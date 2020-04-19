@@ -23,6 +23,8 @@ float game_over_text_time;
 
 float max_shooting_timer;
 float max_enemy_spawner;
+
+bool max_level;
 //------------------------------------------------------------------------
 
 //------------------------------------------------------------------------
@@ -39,9 +41,10 @@ void Init()
 	enemy_spawner = 0.0f;
 	bonus_spawner = 0.0f;
 	game_over_text_time = 0.0f;
+	max_level = false;
 	gameMaster = GameMaster::GetInstance();
 	gameMaster->CreateMap(30);
-	gameMaster->SetPlayer(App::CreateSprite(".\\TestData\\ships2.bmp", 1, 3), 0);
+	gameMaster->SetPlayer(App::CreateSprite(".\\MainData\\ships2.bmp", 1, 3), 0);
 }
 
 void GameReset()
@@ -100,7 +103,7 @@ void Update(float deltaTime)
 			if (shooting_timer >= max_shooting_timer)
 			{
 				shooting_timer = 0.0f;
-				gameMaster->AddBullet(App::CreateSprite(".\\TestData\\bullet.bmp", 1, 1), 0);
+				gameMaster->AddBullet(App::CreateSprite(".\\MainData\\bullet.bmp", 1, 1), 0);
 			}
 		}
 		if (App::GetController().CheckButton(XINPUT_GAMEPAD_B, true))
@@ -123,21 +126,22 @@ void Update(float deltaTime)
 		if (enemy_spawner / max_enemy_spawner >= 1)
 		{
 			enemy_spawner = 0.0f;
-			gameMaster->AddEnemy(App::CreateSprite(".\\TestData\\ships.bmp", 2, 12), 0);
+			gameMaster->AddEnemy(App::CreateSprite(".\\MainData\\ships.bmp", 2, 12), 0);
 		}
 		if (bonus_spawner / BONUS_SPAWNER >= 1)
 		{
 			bonus_spawner = 0.0f;
-			gameMaster->AddBonus(App::CreateSprite(".\\TestData\\ships.bmp", 2, 12), 2);
+			gameMaster->AddBonus(App::CreateSprite(".\\MainData\\ships.bmp", 2, 12), 2);
 		}
-		if (gameMaster->GetPoints() > LEVEL_2_POINTS && gameMaster->GetPoints() < LEVEL_3_POINTS)
+		if (gameMaster->GetPoints() >= LEVEL_2_POINTS && gameMaster->GetPoints() < LEVEL_3_POINTS)
 		{
 			gameMaster->FirstUpgradePlayer();
 			max_shooting_timer = SHOOTING_TIMER_LV2;
 			max_enemy_spawner = ENEMY_SPAWNER_LV2;
 		}
-		else if (gameMaster->GetPoints() > LEVEL_3_POINTS)
+		else if (gameMaster->GetPoints() >= LEVEL_3_POINTS && !max_level)
 		{
+			max_level = true;
 			gameMaster->SecondUpgradePlayer();
 			max_shooting_timer = SHOOTING_TIMER_LV3;
 			max_enemy_spawner = ENEMY_SPAWNER_LV3;
@@ -146,7 +150,7 @@ void Update(float deltaTime)
 	else
 	{
 		game_over_text_time += deltaTime;
-		if (game_over_text_time > 4000)
+		if (game_over_text_time > GAME_OVER_TEXT_TIME)
 		{
 			GameReset();
 		}
