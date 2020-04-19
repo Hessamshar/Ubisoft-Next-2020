@@ -23,7 +23,7 @@ public:
 	virtual void Update(float dt) = 0;
 	virtual void Draw();
 protected:
-	CSimpleSprite* m_sprite = NULL;
+	CSimpleSprite* m_sprite = nullptr;
 	float m_x = 0.0F;
 	float m_y = 0.0F;
 	float m_target_x = 0.0F;

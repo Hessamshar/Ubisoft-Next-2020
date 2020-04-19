@@ -40,9 +40,13 @@ void Enemy::Update(float dt)
 		else
 		{
 			m_move_mode = 1;
+			m_x = m_target_x;
+			m_y = m_target_y;
 			m_target_x = APP_VIRTUAL_CENTER_X;
 			m_target_y = APP_VIRTUAL_CENTER_Y;
 			m_speed = ENEMY_ROTATION_SPEED;
+			m_collision_width /= 2;
+			m_collision_height /= 2;
 		}
 	}
 	else

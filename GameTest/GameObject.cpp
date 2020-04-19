@@ -4,6 +4,7 @@
 #include "app\app.h"
 #include "GameSettings.h"
 
+bool GAME_SETTING_DEBUG;
 
 GameObject::GameObject(float x, float y, float target_x, float target_y)
 {

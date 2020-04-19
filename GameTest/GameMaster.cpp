@@ -2,6 +2,7 @@
 
 #include <windows.h>
 #include <math.h>
+#include <random>
 
 #include "GameMaster.h"
 #include "Player.h"
@@ -13,7 +14,7 @@
 
 CRITICAL_SECTION cs;
 
-GameMaster* GameMaster::instance = NULL;
+GameMaster* GameMaster::instance = nullptr;
 
 GameMaster::GameMaster()
 {
@@ -38,23 +39,31 @@ GameMaster::~GameMaster()
     {
         delete m_enemies[i];
     }
+    m_player = nullptr;
     m_triangles.clear();
     m_bullets.clear();
     m_enemies.clear();
 }
 
-GameMaster* GameMaster::getInstance()
+GameMaster* GameMaster::GetInstance()
 {
     if (!instance)
     {
         //EnterCriticalSection(&cs);
         if (!instance)
         {
+            instance = nullptr;
             instance = new GameMaster();
         }
         //LeaveCriticalSection(&cs);
     }
     return instance;
+}
+
+void GameMaster::ResetInstance()
+{
+    delete instance;
+    instance = nullptr;
 }
 
 void GameMaster::CreateMap(int num_triangles)
@@ -101,6 +110,7 @@ void GameMaster::SetPlayer(CSimpleSprite* player_sprite, int frame)
     {
         m_player = new Player(m_triangles[m_current]->GetMidX(), m_triangles[m_current]->GetMidY(), APP_VIRTUAL_CENTER_X, APP_VIRTUAL_CENTER_Y);
         m_player->SetSprite(player_sprite, frame);
+        m_lives = MAX_LIVES;
     }
 }
 
@@ -118,10 +128,60 @@ void GameMaster::AddEnemy(CSimpleSprite* enemy_sprite, int frame)
 {
     if (m_triangle_size > 0 && m_player)
     {
-        m_enemies.push_back(new Enemy(APP_VIRTUAL_CENTER_X, APP_VIRTUAL_CENTER_Y, m_player->GetX(), m_player->GetY()));
+        std::random_device rand_dev;
+        std::mt19937 generator(rand_dev());
+        std::uniform_int_distribution<int> distr(0, m_triangle_size - 1);
+        int random_triangle = distr(generator);
+        m_enemies.push_back(new Enemy(APP_VIRTUAL_CENTER_X, APP_VIRTUAL_CENTER_Y,
+            m_triangles[random_triangle]->GetMidX(), m_triangles[random_triangle]->GetMidY()));
         m_enemies.back()->SetSprite(enemy_sprite, frame);
         m_enemies.back()->SetSpeed(ENEMY_SPEED);
     }
+}
+
+void GameMaster::AddMoney(int money)
+{
+    if (m_money < MAX_MONEY)
+    {
+        m_money += money;
+        m_money = m_money > MAX_MONEY ? MAX_MONEY : m_money;
+    }
+}
+
+void GameMaster::BuyLives()
+{
+    if (m_money >= LIFE_PRICE && m_lives < MAX_LIVES)
+    {
+        AddMoney(-1 * LIFE_PRICE);
+        m_lives += 1;
+    }
+}
+
+void GameMaster::BuyNukes()
+{
+    if (m_money >= NUKE_PRICE && m_nukes < MAX_NUKES)
+    {
+        AddMoney(-1 * NUKE_PRICE);
+        m_nukes += 1;
+    }
+}
+
+void GameMaster::UseNukes()
+{
+    if (m_nukes > 0)
+    {
+        m_nukes -= 1;
+        DestroyAllEnemies();
+    }
+}
+
+void GameMaster::DestroyAllEnemies()
+{
+    for (int i = 0; i < m_enemies.size(); i++)
+    {
+        delete m_enemies[i];
+    }
+    m_enemies.clear();
 }
 
 void GameMaster::CollisionDetection()
@@ -131,13 +191,19 @@ void GameMaster::CollisionDetection()
         if (AreColliding(m_enemies[i], m_player))
         {
             m_enemies[i]->Destroy();
-            m_player->Destroy();
+            m_lives--;
+            if (m_lives <= 0)
+            {
+                m_player->Destroy();
+            }
             continue;
         }
         for (int j = 0; j < m_bullets.size(); j++)
         {
             if (AreColliding(m_enemies[i], m_bullets[j]))
             {
+                AddPoints(ENEMY_DESTROY_POINT);
+                AddMoney(ENEMY_DESTROY_MONEY);
                 m_enemies[i]->Destroy();
                 m_bullets[j]->Destroy();
                 break;
@@ -158,6 +224,15 @@ bool GameMaster::AreColliding(GameObject* obj1, GameObject* obj2)
     return false;
 }
 
+bool GameMaster::IsGameOver() const
+{
+    if (m_triangle_size > 0 && m_player)
+    {
+        return m_player->IsDestroyed();
+    }
+    return false;
+}
+
 void GameMaster::Update(float dt)
 {
     if (m_triangle_size > 0 && m_player)
@@ -166,7 +241,6 @@ void GameMaster::Update(float dt)
         m_player->SetPosition(m_triangles[m_current]->GetMidX(), m_triangles[m_current]->GetMidY());
         float angle = atan2(APP_VIRTUAL_CENTER_Y - (double)m_triangles[m_current]->GetMidY(),
             (double)m_triangles[m_current]->GetMidX() - APP_VIRTUAL_CENTER_X);
-        //m_player_sprite->SetAngle(5 * PI / 2 - angle);
         m_player->Update(dt);
         for (int i = 0; i < m_bullets.size(); i++)
         {

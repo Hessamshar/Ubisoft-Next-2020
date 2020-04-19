@@ -204,7 +204,7 @@
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="GameMaster.cpp" />
     <ClCompile Include="GameObject.cpp" />
-    <ClCompile Include="GameTest.cpp" />
+    <ClCompile Include="GameMain.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
