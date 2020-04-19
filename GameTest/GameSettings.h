@@ -13,6 +13,6 @@
 #define ENEMY_ROTATION_SPEED		(0.3f)
 #define APP_VIRTUAL_CENTER_X		(APP_VIRTUAL_WIDTH / 2)
 #define APP_VIRTUAL_CENTER_Y		(APP_VIRTUAL_HEIGHT / 2)
-#define DEBUG						(1)
+#define DEBUG						(0)
 
 #endif

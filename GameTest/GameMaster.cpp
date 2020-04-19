@@ -87,7 +87,7 @@ void GameMaster::CreateMap(int num_triangles)
 
 void GameMaster::MovePlayerRight()
 {
-    m_current = m_current == m_triangle_size - 1 ? 0 : m_current + 1;
+    m_current = (m_current + 1) % m_triangle_size;
 }
 
 void GameMaster::MovePlayerLeft()
@@ -126,25 +126,37 @@ void GameMaster::AddEnemy(CSimpleSprite* enemy_sprite, int frame)
 
 void GameMaster::CollisionDetection()
 {
-    for (int i = 0; i < m_bullets.size(); i++)
+    for (int i = 0; i < m_enemies.size(); i++)
     {
-        for (int j = 0; j < m_enemies.size(); j++)
+        if (AreColliding(m_enemies[i], m_player))
         {
-
+            m_enemies[i]->Destroy();
+            m_player->Destroy();
+            continue;
+        }
+        for (int j = 0; j < m_bullets.size(); j++)
+        {
+            if (AreColliding(m_enemies[i], m_bullets[j]))
+            {
+                m_enemies[i]->Destroy();
+                m_bullets[j]->Destroy();
+                break;
+            }
         }
     }
 }
 
-//void GameMaster::AreColliding(float x1, float y1, float width1, float height1)
-//{
-//    for (int i = 0; i < m_bullets.size(); i++)
-//    {
-//        for (int j = 0; j < m_enemies.size(); j++)
-//        {
-//
-//        }
-//    }
-//}
+bool GameMaster::AreColliding(GameObject* obj1, GameObject* obj2)
+{
+    if ((obj1->GetX() - obj1->GetCollisionWidth() / 2 * obj1->GetSprite()->GetScale() < obj2->GetX() + obj2->GetCollisionWidth() / 2 * obj2->GetSprite()->GetScale()) &&
+        (obj1->GetX() + obj1->GetCollisionWidth() / 2 * obj1->GetSprite()->GetScale() > obj2->GetX() - obj2->GetCollisionWidth() / 2 * obj2->GetSprite()->GetScale()) &&
+        (obj1->GetY() - obj1->GetCollisionHeight() / 2 * obj1->GetSprite()->GetScale() < obj2->GetY() + obj2->GetCollisionHeight() / 2 * obj2->GetSprite()->GetScale()) &&
+        (obj1->GetY() + obj1->GetCollisionHeight() / 2 * obj1->GetSprite()->GetScale() > obj2->GetY() - obj2->GetCollisionHeight() / 2 * obj2->GetSprite()->GetScale()))
+    {
+        return true;
+    }
+    return false;
+}
 
 void GameMaster::Update(float dt)
 {

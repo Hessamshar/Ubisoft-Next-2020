@@ -35,7 +35,7 @@ private:
 	std::vector<GameObject*> m_enemies;
 
 	void CollisionDetection();
-	bool AreColliding();
+	bool AreColliding(GameObject* obj1, GameObject* obj2);
 };
 
 #endif

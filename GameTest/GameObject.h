@@ -13,9 +13,12 @@ public:
 	void SetSpeed(float speed) { m_speed = speed; };
 	void SetCollisionWidth(float width) { m_collision_width = width; };
 	void SetCollisionHeight(float height) { m_collision_height = height; };
+	float GetCollisionWidth() { return m_collision_width; };
+	float GetCollisionHeight() { return m_collision_height; };
 	float GetX() { return m_x; };
 	float GetY() { return m_y; };
 	CSimpleSprite* GetSprite() { return m_sprite; };
+	void Destroy() { m_destroyed = true; }
 	bool IsDestroyed() const { return m_destroyed; }
 	virtual void Update(float dt) = 0;
 	virtual void Draw();
