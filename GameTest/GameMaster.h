@@ -48,8 +48,7 @@ private:
 	int m_triangle_size = 0;
 	int m_current = -1;
 	std::vector<GameObject*> m_bullets;
-	std::vector<GameObject*> m_enemies;
-	std::vector<GameObject*> m_bonuses;
+	std::vector<GameObject*> m_spawned_objects;
 	int m_lives = 0;
 	int m_points = 0;
 	int m_money = 0;
@@ -65,7 +64,7 @@ private:
 	bool AreColliding(GameObject* obj1, GameObject* obj2);
 	void AddPoints(int points);
 	void AddMoney(int money);
-	void NukeEnemies();
+	void Nuke();
 	void PlayerHit(int enemy_index);
 	void EnemyHit(int enemy_index);
 	void BonusHit(int bonus_index);

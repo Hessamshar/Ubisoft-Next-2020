@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <random>
+#include <typeinfo>
 
 #include "GameMaster.h"
 #include "Player.h"
@@ -33,19 +34,14 @@ GameMaster::~GameMaster()
     {
         delete m_bullets[i];
     }
-    for (int i = 0; i < m_enemies.size(); i++)
+    for (int i = 0; i < m_spawned_objects.size(); i++)
     {
-        delete m_enemies[i];
-    }
-    for (int i = 0; i < m_bonuses.size(); i++)
-    {
-        delete m_bonuses[i];
+        delete m_spawned_objects[i];
     }
     m_player = nullptr;
     m_triangles.clear();
     m_bullets.clear();
-    m_enemies.clear();
-    m_bonuses.clear();
+    m_spawned_objects.clear();
 }
 
 GameMaster* GameMaster::GetInstance()
@@ -134,10 +130,10 @@ void GameMaster::AddEnemy(CSimpleSprite* enemy_sprite, int frame)
         std::mt19937 generator(rand_dev());
         std::uniform_int_distribution<int> distr(0, m_triangle_size - 1);
         int random_triangle = distr(generator);
-        m_enemies.push_back(new Enemy(APP_VIRTUAL_CENTER_X, APP_VIRTUAL_CENTER_Y,
+        m_spawned_objects.push_back(new Enemy(APP_VIRTUAL_CENTER_X, APP_VIRTUAL_CENTER_Y,
             m_triangles[random_triangle]->GetMidX(), m_triangles[random_triangle]->GetMidY()));
-        m_enemies.back()->SetSprite(enemy_sprite, frame);
-        m_enemies.back()->SetSpeed(ENEMY_SPEED);
+        m_spawned_objects.back()->SetSprite(enemy_sprite, frame);
+        m_spawned_objects.back()->SetSpeed(ENEMY_SPEED);
     }
 }
 
@@ -149,10 +145,10 @@ void GameMaster::AddBonus(CSimpleSprite* bonus_sprite, int frame)
         std::mt19937 generator(rand_dev());
         std::uniform_int_distribution<int> distr(0, m_triangle_size - 1);
         int random_triangle = distr(generator);
-        m_bonuses.push_back(new Bonus(APP_VIRTUAL_CENTER_X, APP_VIRTUAL_CENTER_Y,
+        m_spawned_objects.push_back(new Bonus(APP_VIRTUAL_CENTER_X, APP_VIRTUAL_CENTER_Y,
             m_triangles[random_triangle]->GetMidX(), m_triangles[random_triangle]->GetMidY()));
-        m_bonuses.back()->SetSprite(bonus_sprite, frame);
-        m_bonuses.back()->SetSpeed(BONUS_SPEED);
+        m_spawned_objects.back()->SetSprite(bonus_sprite, frame);
+        m_spawned_objects.back()->SetSpeed(BONUS_SPEED);
     }
 }
 
@@ -192,27 +188,29 @@ void GameMaster::UseNukes()
     if (m_nukes > 0)
     {
         m_nukes -= 1;
-        NukeEnemies();
+        Nuke();
     }
 }
 
-void GameMaster::NukeEnemies()
+void GameMaster::Nuke()
 {
-    for (int i = 0; i < m_enemies.size(); i++)
+    for (int i = 0; i < m_spawned_objects.size(); i++)
     {
-        AddPoints(ENEMY_DESTROY_POINT);
-        AddMoney(ENEMY_DESTROY_MONEY);
-        delete m_enemies[i];
+        if (typeid(*m_spawned_objects[i]) == typeid(Enemy))
+        {
+            AddPoints(ENEMY_DESTROY_POINT);
+            AddMoney(ENEMY_DESTROY_MONEY);
+        }
+        delete m_spawned_objects[i];
     }
-    m_enemies.clear();
-    m_enemies.shrink_to_fit();
+    m_spawned_objects.clear();
 }
 
 void GameMaster::PlayerHit(int enemy_index)
 {
     if (m_player_hit_timer >= PLAYER_HIT_TIME && !m_player->IsDestroyed())
     {
-        m_enemies[enemy_index]->Destroy();
+        m_spawned_objects[enemy_index]->Destroy();
         m_player_hit_timer = 0.0f;
         m_player->GetSprite()->SetColor(0.5f, 1.0f, 0.2f);
         m_lives--;
@@ -225,35 +223,33 @@ void GameMaster::PlayerHit(int enemy_index)
 
 void GameMaster::CollisionDetection()
 {
-    for (int i = 0; i < m_enemies.size(); i++)
+    for (int i = 0; i < m_spawned_objects.size(); i++)
     {
-        if (AreColliding(m_enemies[i], m_player))
+        if (AreColliding(m_spawned_objects[i], m_player))
         {
-            PlayerHit(i);
+            if (typeid(*m_spawned_objects[i]) == typeid(Enemy))
+            {
+                PlayerHit(i);
+            }
+            else
+            {
+                BonusHit(i);
+            }
             continue;
         }
         for (int j = 0; j < m_bullets.size(); j++)
         {
-            if (AreColliding(m_enemies[i], m_bullets[j]))
+            if (AreColliding(m_spawned_objects[i], m_bullets[j]))
             {
-                EnemyHit(i);
-                m_bullets[j]->Destroy();
-                break;
-            }
-        }
-    }
-    for (int i = 0; i < m_bonuses.size(); i++)
-    {
-        if (AreColliding(m_bonuses[i], m_player))
-        {
-            BonusHit(i);
-            continue;
-        }
-        for (int j = 0; j < m_bonuses.size(); j++)
-        {
-            if (AreColliding(m_bonuses[i], m_bullets[j]))
-            {
-                m_bonuses[i]->Destroy();
+
+                if (typeid(*m_spawned_objects[i]) == typeid(Enemy))
+                {
+                    EnemyHit(i);
+                }
+                else
+                {
+                    m_spawned_objects[i]->Destroy();
+                }
                 m_bullets[j]->Destroy();
                 break;
             }
@@ -265,13 +261,13 @@ void GameMaster::EnemyHit(int enemy_index)
 {
     AddPoints(ENEMY_DESTROY_POINT);
     AddMoney(ENEMY_DESTROY_MONEY);
-    m_enemies[enemy_index]->Destroy();
+    m_spawned_objects[enemy_index]->Destroy();
 }
 
 void GameMaster::BonusHit(int bonus_index)
 {
     m_bonus = true;
-    m_bonuses[bonus_index]->Destroy();
+    m_spawned_objects[bonus_index]->Destroy();
 }
 
 bool GameMaster::AreColliding(GameObject* obj1, GameObject* obj2)
@@ -349,28 +345,16 @@ void GameMaster::Update(float dt)
                 m_bullets[i]->Update(dt);
             }
         }
-        for (int i = 0; i < m_enemies.size(); i++)
+        for (int i = 0; i < m_spawned_objects.size(); i++)
         {
-            if (m_enemies[i]->IsDestroyed())
+            if (m_spawned_objects[i]->IsDestroyed())
             {
-                delete m_enemies[i];
-                m_enemies.erase(m_enemies.begin() + i);
+                delete m_spawned_objects[i];
+                m_spawned_objects.erase(m_spawned_objects.begin() + i);
             }
             else
             {
-                m_enemies[i]->Update(dt);
-            }
-        }
-        for (int i = 0; i < m_bonuses.size(); i++)
-        {
-            if (m_bonuses[i]->IsDestroyed())
-            {
-                delete m_bonuses[i];
-                m_bonuses.erase(m_bonuses.begin() + i);
-            }
-            else
-            {
-                m_bonuses[i]->Update(dt);
+                m_spawned_objects[i]->Update(dt);
             }
         }
     }
@@ -397,13 +381,9 @@ void GameMaster::Draw()
         {
             m_bullets[i]->Draw();
         }
-        for (int i = 0; i < m_enemies.size(); i++)
+        for (int i = 0; i < m_spawned_objects.size(); i++)
         {
-            m_enemies[i]->Draw();
-        }
-        for (int i = 0; i < m_bonuses.size(); i++)
-        {
-            m_bonuses[i]->Draw();
+            m_spawned_objects[i]->Draw();
         }
         m_player->Draw();
     }
