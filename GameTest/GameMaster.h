@@ -21,6 +21,8 @@ public:
 	void MovePlayerRight();
 	void MovePlayerLeft();
 	void SetPlayer(CSimpleSprite* player_sprite, int frame);
+	void FirstUpgradePlayer();
+	void SecondUpgradePlayer();
 	void AddBullet(CSimpleSprite* bullet_sprite, int frame);
 	void AddEnemy(CSimpleSprite* enemy_sprite, int frame);
 	void AddBonus(CSimpleSprite* bonus_sprite, int frame);
@@ -28,6 +30,9 @@ public:
 	int GetPoints() const { return m_points; };
 	int GetMoney() const { return m_money; };
 	int GetNukes() const { return m_nukes; };
+	int GetMaxLives() const { return m_max_lives; };
+	int GetMaxMoney() const { return m_max_money; };
+	int GetMaxNukes() const { return m_max_nukes; };
 	void BuyNukes();
 	void BuyLives();
 	void UseNukes();
@@ -49,6 +54,9 @@ private:
 	int m_points = 0;
 	int m_money = 0;
 	int m_nukes = 0;
+	int m_max_lives = 0;
+	int m_max_money = 0;
+	int m_max_nukes = 0;
 	float m_player_hit_timer = 0.0f;
 	float m_bonus_time = 0.0f;
 	bool m_bonus = false;

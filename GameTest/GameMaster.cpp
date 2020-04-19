@@ -43,9 +43,13 @@ GameMaster::~GameMaster()
     }
     m_player = nullptr;
     m_triangles.clear();
+    m_triangles.shrink_to_fit();
     m_bullets.clear();
+    m_bullets.shrink_to_fit();
     m_enemies.clear();
+    m_enemies.shrink_to_fit();
     m_bonuses.clear();
+    m_bonuses.shrink_to_fit();
 }
 
 GameMaster* GameMaster::GetInstance()
@@ -108,7 +112,10 @@ void GameMaster::SetPlayer(CSimpleSprite* player_sprite, int frame)
     {
         m_player = new Player(m_triangles[m_current]->GetMidX(), m_triangles[m_current]->GetMidY(), APP_VIRTUAL_CENTER_X, APP_VIRTUAL_CENTER_Y);
         m_player->SetSprite(player_sprite, frame);
-        m_lives = MAX_LIVES;
+        m_max_lives = MAX_LIVES_LV1;
+        m_max_money = MAX_MONEY_LV1;
+        m_max_nukes = MAX_NUKES_LV1;
+        m_lives = m_max_lives;
         m_player_hit_timer = PLAYER_HIT_TIME + 1;
     }
 }
@@ -157,7 +164,7 @@ void GameMaster::AddMoney(int money)
 {
     money = m_bonus && money > 0 ? money * 2 : money;
     m_money += money;
-    m_money = m_money > MAX_MONEY ? MAX_MONEY : m_money;
+    m_money = m_money > m_max_money ? m_max_money : m_money;
 }
 
 void GameMaster::AddPoints(int points)
@@ -168,7 +175,7 @@ void GameMaster::AddPoints(int points)
 
 void GameMaster::BuyLives()
 {
-    if (m_money >= LIFE_PRICE && m_lives < MAX_LIVES)
+    if (m_money >= LIFE_PRICE && m_lives < m_max_lives)
     {
         AddMoney(-1 * LIFE_PRICE);
         m_lives += 1;
@@ -177,7 +184,7 @@ void GameMaster::BuyLives()
 
 void GameMaster::BuyNukes()
 {
-    if (m_money >= NUKE_PRICE && m_nukes < MAX_NUKES)
+    if (m_money >= NUKE_PRICE && m_nukes < m_max_nukes)
     {
         AddMoney(-1 * NUKE_PRICE);
         m_nukes += 1;
@@ -202,6 +209,7 @@ void GameMaster::NukeEnemies()
         delete m_enemies[i];
     }
     m_enemies.clear();
+    m_enemies.shrink_to_fit();
 }
 
 void GameMaster::PlayerHit(int enemy_index)
@@ -271,6 +279,22 @@ bool GameMaster::AreColliding(GameObject* obj1, GameObject* obj2)
         return true;
     }
     return false;
+}
+
+void GameMaster::FirstUpgradePlayer()
+{
+    m_max_lives = MAX_LIVES_LV2;
+    m_max_money = MAX_MONEY_LV2;
+    m_max_nukes = MAX_NUKES_LV2;
+    m_player->GetSprite()->SetFrame(1);
+}
+
+void GameMaster::SecondUpgradePlayer()
+{
+    m_max_lives = MAX_LIVES_LV3;
+    m_max_money = MAX_MONEY_LV3;
+    m_max_nukes = MAX_NUKES_LV3;
+    m_player->GetSprite()->SetFrame(2);
 }
 
 bool GameMaster::IsGameOver() const

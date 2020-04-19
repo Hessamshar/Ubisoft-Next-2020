@@ -13,20 +13,16 @@
 #include "Bullet.h"
 //------------------------------------------------------------------------
 GameMaster *gameMaster;
+
 float move_button_hold_time;
 float shooting_timer;
 float player_speed;
-float enemy_respawner;
-float bonus_respawner;
+float enemy_spawner;
+float bonus_spawner;
 float game_over_text_time;
 
-enum
-{
-	ANIM_FORWARDS,
-	ANIM_BACKWARDS,
-	ANIM_LEFT,
-	ANIM_RIGHT,
-};
+float max_shooting_timer;
+float max_enemy_spawner;
 //------------------------------------------------------------------------
 
 //------------------------------------------------------------------------
@@ -35,11 +31,13 @@ enum
 void Init()
 {
 	gameMaster = nullptr;
+	max_shooting_timer = SHOOTING_TIMER_LV1;
+	max_enemy_spawner = ENEMY_SPAWNER_LV1;
 	move_button_hold_time = MAX_MOVE_BUTTON_HOLD_TIME + 1;
-	shooting_timer = SHOOTING_TIMER + 1;
+	shooting_timer = max_shooting_timer + 1;
 	player_speed = 0.0f;
-	enemy_respawner = 0.0f;
-	bonus_respawner = 0.0f;
+	enemy_spawner = 0.0f;
+	bonus_spawner = 0.0f;
 	game_over_text_time = 0.0f;
 	gameMaster = GameMaster::GetInstance();
 	gameMaster->CreateMap(30);
@@ -58,10 +56,10 @@ void GameReset()
 //------------------------------------------------------------------------
 void Update(float deltaTime)
 {
-	enemy_respawner += deltaTime;
-	bonus_respawner += deltaTime;
+	enemy_spawner += deltaTime;
+	bonus_spawner += deltaTime;
 	shooting_timer += deltaTime;
-	shooting_timer = shooting_timer > SHOOTING_TIMER ? SHOOTING_TIMER + 1 : shooting_timer;
+	shooting_timer = shooting_timer > max_shooting_timer ? max_shooting_timer + 1 : shooting_timer;
 	gameMaster->Update(deltaTime);
 	if (!gameMaster->IsGameOver())
 	{
@@ -99,7 +97,7 @@ void Update(float deltaTime)
 		}
 		if (App::GetController().CheckButton(XINPUT_GAMEPAD_A, false))
 		{
-			if (shooting_timer >= SHOOTING_TIMER)
+			if (shooting_timer >= max_shooting_timer)
 			{
 				shooting_timer = 0.0f;
 				gameMaster->AddBullet(App::CreateSprite(".\\TestData\\bullet.bmp", 1, 1), 0);
@@ -122,15 +120,27 @@ void Update(float deltaTime)
 			GameReset();
 		}
 
-		if (enemy_respawner / ENEMY_RESPAWNER >= 1)
+		if (enemy_spawner / max_enemy_spawner >= 1)
 		{
-			enemy_respawner = 0.0f;
+			enemy_spawner = 0.0f;
 			gameMaster->AddEnemy(App::CreateSprite(".\\TestData\\ships.bmp", 2, 12), 0);
 		}
-		if (bonus_respawner / BONUS_RESPAWNER >= 1)
+		if (bonus_spawner / BONUS_SPAWNER >= 1)
 		{
-			bonus_respawner = 0.0f;
+			bonus_spawner = 0.0f;
 			gameMaster->AddBonus(App::CreateSprite(".\\TestData\\ships.bmp", 2, 12), 2);
+		}
+		if (gameMaster->GetPoints() > LEVEL_2_POINTS && gameMaster->GetPoints() < LEVEL_3_POINTS)
+		{
+			gameMaster->FirstUpgradePlayer();
+			max_shooting_timer = SHOOTING_TIMER_LV2;
+			max_enemy_spawner = ENEMY_SPAWNER_LV2;
+		}
+		else if (gameMaster->GetPoints() > LEVEL_3_POINTS)
+		{
+			gameMaster->SecondUpgradePlayer();
+			max_shooting_timer = SHOOTING_TIMER_LV3;
+			max_enemy_spawner = ENEMY_SPAWNER_LV3;
 		}
 	}
 	else
@@ -155,26 +165,9 @@ void PrintString(float x, float y, std::string st, float r, float g, float b)
 //------------------------------------------------------------------------
 void Render()
 {
-	//static float a = 0.0f;
-	//float r = 1.0f;
-	//float g = 1.0f;
-	//float b = 1.0f;
-	//a += 0.1f;
-	//for (int i = 0; i < 20; i++)
-	//{
-
-	//	float sx = 200 + sinf(a + i * 0.1f)*60.0f;
-	//	float sy = 200 + cosf(a + i * 0.1f)*60.0f;
-	//	float ex = 700 - sinf(a + i * 0.1f)*60.0f;
-	//	float ey = 700 - cosf(a + i * 0.1f)*60.0f;
-	//	g = (float)i / 20.0f;
-	//	b = (float)i / 20.0f;
-	//	App::DrawLine(sx, sy, ex, ey,r,g,b);
-	//}
-
-	PrintString(20, APP_VIRTUAL_HEIGHT - 50, "LIVES: " + std::to_string(gameMaster->GetLives()) + "/" + std::to_string(MAX_LIVES), 1.0f, 0.4f, 0.4f);
-	PrintString(20, APP_VIRTUAL_HEIGHT - 80, "MONEY: " + std::to_string(gameMaster->GetMoney()) + "/" + std::to_string(MAX_MONEY), 0.22f, 0.85f, 0.04f);
-	PrintString(20, APP_VIRTUAL_HEIGHT - 110, "NUKES: " + std::to_string(gameMaster->GetNukes()) + "/" + std::to_string(MAX_NUKES), 0.95f, 0.65f, 0.35f);
+	PrintString(20, APP_VIRTUAL_HEIGHT - 50, "LIVES: " + std::to_string(gameMaster->GetLives()) + "/" + std::to_string(gameMaster->GetMaxLives()), 1.0f, 0.4f, 0.4f);
+	PrintString(20, APP_VIRTUAL_HEIGHT - 80, "MONEY: " + std::to_string(gameMaster->GetMoney()) + "/" + std::to_string(gameMaster->GetMaxMoney()), 0.22f, 0.85f, 0.04f);
+	PrintString(20, APP_VIRTUAL_HEIGHT - 110, "NUKES: " + std::to_string(gameMaster->GetNukes()) + "/" + std::to_string(gameMaster->GetMaxNukes()), 0.95f, 0.65f, 0.35f);
 	PrintString(20, 110, "POINTS: " + std::to_string(gameMaster->GetPoints()), 0.09f, 0.89f, 0.95f);
 
 	PrintString(20, APP_VIRTUAL_HEIGHT - 200, std::to_string(LIFE_PRICE) + " LIFE PRICE", 0.79f, 0.51f, 0.95f);
