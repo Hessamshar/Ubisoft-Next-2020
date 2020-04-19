@@ -15,7 +15,7 @@
 #define SHOOTING_TIMER_LV3			(230.0f)
 #define BULLET_SPEED				(300.0f)
 #define ENEMY_SPEED					(100.0f)
-#define BONUS_SPEED					(100.0f)
+#define BONUS_SPEED					(150.0f)
 #define ENEMY_SPAWNER_LV1			(1200.0f)
 #define ENEMY_SPAWNER_LV2			(1000.0f)
 #define ENEMY_SPAWNER_LV3			(600.0f)

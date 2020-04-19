@@ -188,22 +188,17 @@ void GameMaster::UseNukes()
     if (m_nukes > 0)
     {
         m_nukes -= 1;
-        Nuke();
-    }
-}
-
-void GameMaster::Nuke()
-{
-    for (int i = 0; i < m_spawned_objects.size(); i++)
-    {
-        if (typeid(*m_spawned_objects[i]) == typeid(Enemy))
+        for (int i = 0; i < m_spawned_objects.size(); i++)
         {
-            AddPoints(ENEMY_DESTROY_POINT);
-            AddMoney(ENEMY_DESTROY_MONEY);
+            if (typeid(*m_spawned_objects[i]) == typeid(Enemy))
+            {
+                AddPoints(ENEMY_DESTROY_POINT);
+                AddMoney(ENEMY_DESTROY_MONEY);
+            }
+            delete m_spawned_objects[i];
         }
-        delete m_spawned_objects[i];
+        m_spawned_objects.clear();
     }
-    m_spawned_objects.clear();
 }
 
 void GameMaster::PlayerHit(int enemy_index)

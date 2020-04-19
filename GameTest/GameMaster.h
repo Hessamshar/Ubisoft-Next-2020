@@ -64,7 +64,6 @@ private:
 	bool AreColliding(GameObject* obj1, GameObject* obj2);
 	void AddPoints(int points);
 	void AddMoney(int money);
-	void Nuke();
 	void PlayerHit(int enemy_index);
 	void EnemyHit(int enemy_index);
 	void BonusHit(int bonus_index);
