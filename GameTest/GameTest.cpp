@@ -33,7 +33,7 @@ void Init()
 {
 	gameMaster = GameMaster::getInstance();
 	gameMaster->CreateMap(30);
-	gameMaster->SetPlayerSprite(App::CreateSprite(".\\TestData\\ships2.bmp", 1, 3), 0);
+	gameMaster->SetPlayer(App::CreateSprite(".\\TestData\\ships2.bmp", 1, 3), 0);
 }
 
 //------------------------------------------------------------------------

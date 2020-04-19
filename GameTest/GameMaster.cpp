@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include "GameMaster.h"
+#include "Player.h"
 #include "Bullet.h"
 #include "Enemy.h"
 #include "GameSettings.h"
@@ -21,9 +22,9 @@ GameMaster::GameMaster()
 
 GameMaster::~GameMaster()
 {
-    if (m_player_sprite)
+    if (m_player)
     {
-        delete m_player_sprite;
+        delete m_player;
     }
     for (int i = 0; i < m_triangles.size(); i++)
     {
@@ -84,14 +85,6 @@ void GameMaster::CreateMap(int num_triangles)
     m_current = 0;
 }
 
-void GameMaster::SetPlayerSprite(CSimpleSprite* player, int frame)
-{
-    m_player_sprite = player;
-    m_player_sprite->SetPosition(0.0f, 0.0f);
-    m_player_sprite->SetFrame(frame);
-    m_player_sprite->SetScale(1.0f);
-};
-
 void GameMaster::MovePlayerRight()
 {
     m_current = m_current == m_triangle_size - 1 ? 0 : m_current + 1;
@@ -102,36 +95,33 @@ void GameMaster::MovePlayerLeft()
     m_current = m_current == 0 ? m_triangle_size - 1 : m_current - 1;
 }
 
-float GameMaster::GetPlayerX()
+void GameMaster::SetPlayer(CSimpleSprite* player_sprite, int frame)
 {
-    if (m_triangle_size > 0 && m_player_sprite)
+    if (m_triangle_size > 0)
     {
-        return m_triangles[m_current]->GetMidX();
+        m_player = new Player(m_triangles[m_current]->GetMidX(), m_triangles[m_current]->GetMidY(), APP_VIRTUAL_CENTER_X, APP_VIRTUAL_CENTER_Y);
+        m_player->SetSprite(player_sprite, frame);
     }
-    return 0.0f;
-}
-
-float GameMaster::GetPlayerY()
-{
-    if (m_triangle_size > 0 && m_player_sprite)
-    {
-        return m_triangles[m_current]->GetMidY();
-    }
-    return 0.0f;
 }
 
 void GameMaster::AddBullet(CSimpleSprite* bullet_sprite, int frame)
 {
-    m_bullets.push_back(new Bullet(GetPlayerX(), GetPlayerY(), APP_VIRTUAL_CENTER_X, APP_VIRTUAL_CENTER_Y));
-    m_bullets.back()->SetSprite(bullet_sprite, frame);
-    m_bullets.back()->SetSpeed(BULLET_SPEED);
+    if (m_triangle_size > 0 && m_player)
+    {
+        m_bullets.push_back(new Bullet(m_player->GetX(), m_player->GetY(), APP_VIRTUAL_CENTER_X, APP_VIRTUAL_CENTER_Y));
+        m_bullets.back()->SetSprite(bullet_sprite, frame);
+        m_bullets.back()->SetSpeed(BULLET_SPEED);
+    }
 }
 
 void GameMaster::AddEnemy(CSimpleSprite* enemy_sprite, int frame)
 {
-    m_enemies.push_back(new Enemy(APP_VIRTUAL_CENTER_X, APP_VIRTUAL_CENTER_Y, GetPlayerX(), GetPlayerY()));
-    m_enemies.back()->SetSprite(enemy_sprite, frame);
-    m_enemies.back()->SetSpeed(ENEMY_SPEED);
+    if (m_triangle_size > 0 && m_player)
+    {
+        m_enemies.push_back(new Enemy(APP_VIRTUAL_CENTER_X, APP_VIRTUAL_CENTER_Y, m_player->GetX(), m_player->GetY()));
+        m_enemies.back()->SetSprite(enemy_sprite, frame);
+        m_enemies.back()->SetSpeed(ENEMY_SPEED);
+    }
 }
 
 void GameMaster::CollisionDetection()
@@ -145,16 +135,27 @@ void GameMaster::CollisionDetection()
     }
 }
 
+//void GameMaster::AreColliding(float x1, float y1, float width1, float height1)
+//{
+//    for (int i = 0; i < m_bullets.size(); i++)
+//    {
+//        for (int j = 0; j < m_enemies.size(); j++)
+//        {
+//
+//        }
+//    }
+//}
+
 void GameMaster::Update(float dt)
 {
-    if (m_triangle_size > 0 && m_player_sprite)
+    if (m_triangle_size > 0 && m_player)
     {
         CollisionDetection();
-        m_player_sprite->SetPosition(m_triangles[m_current]->GetMidX(), m_triangles[m_current]->GetMidY());
+        m_player->SetPosition(m_triangles[m_current]->GetMidX(), m_triangles[m_current]->GetMidY());
         float angle = atan2(APP_VIRTUAL_CENTER_Y - (double)m_triangles[m_current]->GetMidY(),
             (double)m_triangles[m_current]->GetMidX() - APP_VIRTUAL_CENTER_X);
-        m_player_sprite->SetAngle(5 * PI / 2 - angle);
-        m_player_sprite->Update(dt);
+        //m_player_sprite->SetAngle(5 * PI / 2 - angle);
+        m_player->Update(dt);
         for (int i = 0; i < m_bullets.size(); i++)
         {
             if (m_bullets[i]->IsDestroyed())
@@ -197,7 +198,7 @@ void GameMaster::Draw()
         m_triangles[m_current]->SetColor(1.00, 0.87, 0.05);
         m_triangles[m_current]->Draw();
     }
-    if (m_triangle_size > 0 && m_player_sprite)
+    if (m_triangle_size > 0 && m_player)
     {
         for (int i = 0; i < m_bullets.size(); i++)
         {
@@ -207,17 +208,6 @@ void GameMaster::Draw()
         {
             m_enemies[i]->Draw();
         }
-        m_player_sprite->Draw();
-        if (DEBUG)
-        {
-            float player_x = m_triangles[m_current]->GetMidX();
-            float player_y = m_triangles[m_current]->GetMidY();
-            float width = m_collision_width * m_player_sprite->GetScale() / 2;
-            float height = m_collision_height * m_player_sprite->GetScale() / 2;
-            App::DrawLine(player_x - width, player_y - height, player_x + width, player_y - height, 0.5, 1, 0.5);
-            App::DrawLine(player_x + width, player_y - height, player_x + width, player_y + height, 0.5, 1, 0.5);
-            App::DrawLine(player_x + width, player_y + height, player_x - width, player_y + height, 0.5, 1, 0.5);
-            App::DrawLine(player_x - width, player_y + height, player_x - width, player_y - height, 0.5, 1, 0.5);
-        }
+        m_player->Draw();
     }
 }
