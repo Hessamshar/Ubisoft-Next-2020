@@ -177,6 +177,13 @@ void Render()
 	PrintString(20, APP_VIRTUAL_HEIGHT - 200, std::to_string(LIFE_PRICE) + " LIFE PRICE", 0.79f, 0.51f, 0.95f);
 	PrintString(20, APP_VIRTUAL_HEIGHT - 230, std::to_string(NUKE_PRICE) + " NUKE PRICE", 0.79f, 0.51f, 0.95f);
 
+	App::Print(APP_VIRTUAL_WIDTH - 350, APP_VIRTUAL_HEIGHT - 50, "D-PAD LEFT AND RIGHT TO MOVE", 0.5f, 0.5f, 0.5f);
+	App::Print(APP_VIRTUAL_WIDTH - 158, APP_VIRTUAL_HEIGHT - 80, "A TO SHOOT", 0.5f, 0.5f, 0.5f);
+	App::Print(APP_VIRTUAL_WIDTH - 199, APP_VIRTUAL_HEIGHT - 110, "X TO BUY NUKES", 0.5f, 0.5f, 0.5f);
+	App::Print(APP_VIRTUAL_WIDTH - 190, APP_VIRTUAL_HEIGHT - 140, "B TO BUY LIVES", 0.5f, 0.5f, 0.5f);
+	App::Print(APP_VIRTUAL_WIDTH - 196, APP_VIRTUAL_HEIGHT - 170, "Y TO USE NUKES", 0.5f, 0.5f, 0.5f);
+	App::Print(APP_VIRTUAL_WIDTH - 212, APP_VIRTUAL_HEIGHT - 200, "BACK TO RESTART", 0.5f, 0.5f, 0.5f);
+
 	if (game_over_text_time > 0.0f)
 	{
 		App::Print(20, APP_VIRTUAL_HEIGHT / 2, "GAME OVER :(", 1.0f, 1.0f, 1.0f);

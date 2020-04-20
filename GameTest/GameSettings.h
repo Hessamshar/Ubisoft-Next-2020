@@ -39,6 +39,6 @@
 #define GAME_OVER_TEXT_TIME			(4000.0f)
 #define APP_VIRTUAL_CENTER_X		(APP_VIRTUAL_WIDTH / 2)
 #define APP_VIRTUAL_CENTER_Y		(APP_VIRTUAL_HEIGHT / 2)
-#define DEBUG						(true)
+#define DEBUG						(false)
 
 #endif
