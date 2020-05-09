@@ -7,7 +7,7 @@ class GameObject
 {
 public:
 	GameObject(float x, float y, float target_x, float target_y);
-	~GameObject();
+	virtual ~GameObject();
 	virtual void SetSprite(CSimpleSprite* sprite, int frame);
 	void SetPosition(float x, float y) { m_x = x; m_y = y; };
 	void SetSpeed(float speed) { m_speed = speed; };
